@@ -303,8 +303,8 @@ function checkDeviceAndSize() {
 
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count;
-    const baseSpeed = 2 + Math.random() * 3;
-    const extraSpeed = (2 - hpRatio) * 3;
+    const baseSpeed = 1.5 + Math.random() * 2.5;
+    const extraSpeed = (1.5 - hpRatio) * 2.5;
     const speed = baseSpeed + extraSpeed;
     const isLarge = Math.random() < 0.5;
 
