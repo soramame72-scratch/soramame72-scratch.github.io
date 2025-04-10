@@ -150,8 +150,8 @@ function checkDeviceAndSize() {
       y: 100,
       width: 55,
       height: 85,
-      hp: 10000,
-      maxHp: 10000,
+      hp: 6000,
+      maxHp: 6000,
       attackTimer: 0,
       attackInterval: 60,
       targetX: Math.random() * canvas.width,
@@ -303,8 +303,8 @@ function checkDeviceAndSize() {
 
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count;
-    const baseSpeed = 2 + Math.random() * 4;
-    const extraSpeed = (2 - hpRatio) * 4;
+    const baseSpeed = 3 + Math.random() * 5;
+    const extraSpeed = (3 - hpRatio) * 5;
     const speed = baseSpeed + extraSpeed;
     const isLarge = Math.random() < 0.5;
 
@@ -359,7 +359,7 @@ function checkDeviceAndSize() {
       enemies.forEach((e, i) => {
         if (e.x < hitboxX + hitboxSize && e.x + e.width > hitboxX &&
             e.y < hitboxY + hitboxSize && e.y + e.height > hitboxY) {
-          if (!player.shield) player.hp -= 15;
+          if (!player.shield) player.hp -= 20;
           enemies.splice(i, 1);
         }
       });
