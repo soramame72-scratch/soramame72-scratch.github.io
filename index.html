@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ xcv<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -274,23 +274,26 @@ function checkDeviceAndSize() {
       if (player.bombCooldown > 0) player.bombCooldown--;
     }
 
-    function updateBoss() {
-      boss.attackTimer++;
-      if (boss.attackTimer >= boss.attackInterval) {
-        boss.attackTimer = 0;
-        boss.spellActive = Math.random() < 0.3;
-        fireCircleBullets();
-      }
+        boss.attackInterval = 60 / 3;
 
-      let angle = Math.atan2(boss.targetY - boss.y, boss.targetX - boss.x);
-      boss.x += Math.cos(angle) * boss.speed;
-      boss.y += Math.sin(angle) * boss.speed;
+        function updateBoss() {
+          boss.attackTimer++;
+  
+          if (boss.attackTimer >= boss.attackInterval) {
+            boss.attackTimer = 0;
+            boss.spellActive = Math.random() < 0.3;
+            fireCircleBullets();
+          }
 
-      if (Math.abs(boss.x - boss.targetX) < 5 && Math.abs(boss.y - boss.targetY) < 5) {
-        boss.targetX = Math.random() * canvas.width;
-        boss.targetY = Math.random() * (canvas.height * 0.25) + canvas.height * 0.25;
-      }
-    }
+          let angle = Math.atan2(boss.targetY - boss.y, boss.targetX - boss.x);
+          boss.x += Math.cos(angle) * boss.speed;
+          boss.y += Math.sin(angle) * boss.speed;
+
+          if (Math.abs(boss.x - boss.targetX) < 5 && Math.abs(boss.y - boss.targetY) < 5) {
+            boss.targetX = Math.random() * canvas.width;
+            boss.targetY = Math.random() * (canvas.height * 0.25) + canvas.height * 0.25;
+          }
+        }
 
     function fireCircleBullets() {
   const hpRatio = boss.hp / boss.maxHp;
