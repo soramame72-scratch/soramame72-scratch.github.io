@@ -297,14 +297,14 @@ function checkDeviceAndSize() {
 
     function fireCircleBullets() {
   const hpRatio = boss.hp / boss.maxHp;
-  const baseCount = 12;
-  const maxExtra = 24;
+  const baseCount = 24;
+  const maxExtra = 48;
   const count = baseCount + Math.floor((1 - hpRatio) * maxExtra);
 
   for (let i = 0; i < count; i++) {
     const angle = (Math.PI * 2 * i) / count;
-    const baseSpeed = 3 + Math.random() * 5;
-    const extraSpeed = (3 - hpRatio) * 5;
+    const baseSpeed = 2 + Math.random() * 3;
+    const extraSpeed = (2 - hpRatio) * 3;
     const speed = baseSpeed + extraSpeed;
     const isLarge = Math.random() < 0.5;
 
