@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VideoShare - 動画共有サイト</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* ヘッダー */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 200;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 30px;
+            background: linear-gradient(45deg, #ff0050, #ff6b9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ff0050;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff0050;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #e6004a;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .video-count {
+            margin-left: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            margin-top: 80px;
+        }
+
+        .video-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .video-item {
+            width: 100%;
+            height: calc(100vh - 80px);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .video-player {
+            width: 100%;
+            height: 100%;
+            max-width: 400px;
+            max-height: 80%;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .video-placeholder {
+            width: 300px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .video-placeholder .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .video-placeholder .message {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+        }
+
+        /* 動画情報 */
+        .video-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 100px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .video-details {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 右側アクションボタン */
+        .actions {
+            position: absolute;
+            right: 20px;
+            bottom: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .action-btn.liked {
+            background: #ff0050;
+            border-color: #ff0050;
+        }
+
+        .action-count {
+            position: absolute;
+            bottom: -25px;
+            font-size: 12px;
+            text-align: center;
+            width: 100%;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* ナビゲーション矢印 */
+        .nav-arrow {
+            position: absolute;
+            right: 50%;
+            transform: translateX(50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(50%) scale(1.1);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-up {
+            top: 100px;
+        }
+
+        .nav-down {
+            bottom: 30px;
+        }
+
+        /* 検索結果なしの表示 */
+        .no-results {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        .no-results .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 15px;
+            }
+            
+            .logo {
+                font-size: 20px;
+                margin-right: 15px;
+            }
+            
+            .search-container {
+                max-width: none;
+            }
+            
+            .video-count {
+                display: none;
+            }
+            
+            .actions {
+                right: 10px;
+                bottom: 80px;
+            }
+            
+            .video-info {
+                left: 10px;
+                right: 80px;
+                padding: 15px;
+            }
+            
+            .video-title {
+                font-size: 18px;
+            }
+        }
+
+        /* アニメーション */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* 動画コントロール */
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <div class="header">
+            <div class="logo">🎥 VideoShare</div>
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="動画を検索...">
+                <button class="search-btn" onclick="searchVideos()">🔍</button>
+            </div>
+            <div class="video-count" id="videoCount">5件の動画</div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <div class="video-container" id="videoContainer">
+                <!-- 動画アイテムはJavaScriptで動的に生成 -->
+            </div>
+
+            <!-- 検索結果なし -->
+            <div class="no-results" id="noResults">
+                <div class="icon">😔</div>
+                <h3>検索結果が見つかりません</h3>
+                <p>別のキーワードで検索してみてください</p>
+            </div>
+
+            <!-- ナビゲーション矢印 -->
+            <button class="nav-arrow nav-up" id="navUp" onclick="scrollUp()">▲</button>
+            <button class="nav-arrow nav-down" id="navDown" onclick="scrollDown()">▼</button>
+        </div>
+    </div>
+
+    <script>
+        // サンプル動画データ（実際の実装では、サーバーAPIから取得）
+        const videoDatabase = [
+            {
+                filename: 'summer_vacation_2024.mp4',
+                url: '/videos/summer_vacation_2024.mp4', // 実際のサーバーパス
+                duration: '2:30',
+                size: '15.2MB',
+                uploadDate: '2024-07-15',
+                views: 1250,
+                likes: 89
+            },
+            {
+                filename: 'cooking_pasta_recipe.mp4',
+                url: '/videos/cooking_pasta_recipe.mp4',
+                duration: '5:45',
+                size: '32.1MB',
+                uploadDate: '2024-07-10',
+                views: 892,
+                likes: 156
+            },
+            {
+                filename: 'cat_playing_garden.mp4',
+                url: '/videos/cat_playing_garden.mp4',
+                duration: '1:15',
+                size: '8.7MB',
+                uploadDate: '2024-07-08',
+                views: 2100,
+                likes: 312
+            },
+            {
+                filename: 'watercolor_painting_tutorial.mp4',
+                url: '/videos/watercolor_painting_tutorial.mp4',
+                duration: '12:20',
+                size: '78.5MB',
+                uploadDate: '2024-07-05',
+                views: 754,
+                likes: 89
+            },
+            {
+                filename: 'morning_workout_routine.mp4',
+                url: '/videos/morning_workout_routine.mp4',
+                duration: '8:30',
+                size: '45.3MB',
+                uploadDate: '2024-07-03',
+                views: 1500,
+                likes: 201
+            }
+        ];
+
+        let currentVideoIndex = 0;
+        let filteredVideos = [...videoDatabase];
+        let currentVideos = [...videoDatabase];
+
+        function initializeVideos() {
+            displayVideos(currentVideos);
+            updateVideoCount();
+            updateNavigation();
+        }
+
+        function displayVideos(videos) {
+            const container = document.getElementById('videoContainer');
+            const noResults = document.getElementById('noResults');
+            
+            container.innerHTML = '';
+            
+            if (videos.length === 0) {
+                noResults.classList.add('show');
+                return;
+            } else {
+                noResults.classList.remove('show');
+            }
+
+            videos.forEach((video, index) => {
+                const videoItem = createVideoItem(video, index);
+                container.appendChild(videoItem);
+            });
+
+            currentVideoIndex = 0;
+            updateVideoPosition();
+        }
+
+        function createVideoItem(video, index) {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'video-item fade-in';
+            
+            const title = video.filename.replace(/\.[^/.]+$/, ""); // 拡張子を除去
+            
+            videoItem.innerHTML = `
+                <!-- 動画プレイヤー（実際の動画がある場合） -->
+                <video class="video-player" style="display: none;" controls muted>
+                    <source src="${video.url}" type="video/mp4">
+                    お使いのブラウザは動画タグをサポートしていません。
+                </video>
+                
+                <!-- プレースホルダー（動画ファイルが見つからない場合） -->
+                <div class="video-placeholder">
+                    <div class="icon">🎬</div>
+                    <div class="message">
+                        <strong>${title}</strong><br>
+                        <small>動画ファイル: ${video.filename}</small><br>
+                        <small>サーバーから動画を読み込み中...</small>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="action-btn" onclick="toggleLike(this, ${index})">
+                        ❤️
+                        <div class="action-count">${video.likes}</div>
+                    </button>
+                    <button class="action-btn" onclick="downloadVideo('${video.url}', '${video.filename}')">
+                        📥
+                        <div class="action-count">DL</div>
+                    </button>
+                    <button class="action-btn" onclick="shareVideo('${title}')">
+                        📤
+                        <div class="action-count">Share</div>
+                    </button>
+                    <button class="action-btn" onclick="toggleFullscreen()">
+                        🔍
+                        <div class="action-count">Full</div>
+                    </button>
+                </div>
+
+                <div class="video-info">
+                    <div class="video-title">${title}</div>
+                    <div class="video-details">
+                        <span>📅 ${video.uploadDate}</span>
+                        <span>👁️ ${video.views.toLocaleString()}回再生</span>
+                        <span>⏱️ ${video.duration}</span>
+                        <span>💾 ${video.size}</span>
+                    </div>
+                </div>
+            `;
+
+            // 動画の読み込みを試行
+            const videoElement = videoItem.querySelector('video');
+            const placeholder = videoItem.querySelector('.video-placeholder');
+            
+            videoElement.addEventListener('loadeddata', () => {
+                videoElement.style.display = 'block';
+                placeholder.style.display = 'none';
+            });
+
+            videoElement.addEventListener('error', () => {
+                // 動画が読み込めない場合はプレースホルダーを表示
+                videoElement.style.display = 'none';
+                placeholder.style.display = 'flex';
+            });
+
+            // 動画の読み込みを開始
+            videoElement.load();
+
+            return videoItem;
+        }
+
+        function searchVideos() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (query === '') {
+                currentVideos = [...videoDatabase];
+            } else {
+                currentVideos = videoDatabase.filter(video => {
+                    const title = video.filename.replace(/\.[^/.]+$/, "").toLowerCase();
+                    return title.includes(query) || 
+                           video.filename.toLowerCase().includes(query) ||
+                           video.uploadDate.includes(query);
+                });
+            }
+            
+            displayVideos(currentVideos);
+            updateVideoCount();
+            updateNavigation();
+        }
+
+        function updateVideoCount() {
+            const count = currentVideos.length;
+            document.getElementById('videoCount').textContent = `${count}件の動画`;
+        }
+
+        function scrollDown() {
+            if (currentVideoIndex < currentVideos.length - 1) {
+                currentVideoIndex++;
+                updateVideoPosition();
+                updateNavigation();
+                pauseCurrentVideo();
+            }
+        }
+
+        function scrollUp() {
+            if (currentVideoIndex > 0) {
+                currentVideoIndex--;
+                updateVideoPosition();
+                updateNavigation();
+                pauseCurrentVideo();
+            }
+        }
+
+        function updateVideoPosition() {
+            const container = document.getElementById('videoContainer');
+            const offset = currentVideoIndex * -100;
+            container.style.transform = `translateY(${offset}vh)`;
+        }
+
+        function updateNavigation() {
+            const navUp = document.getElementById('navUp');
+            const navDown = document.getElementById('navDown');
+            
+            navUp.disabled = currentVideoIndex === 0;
+            navDown.disabled = currentVideoIndex === currentVideos.length - 1;
+        }
+
+        function pauseCurrentVideo() {
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.pause();
+            });
+        }
+
+        function toggleLike(button, videoIndex) {
+            button.classList.toggle('liked');
+            button.classList.add('pulse');
+            
+            const countElement = button.querySelector('.action-count');
+            let count = parseInt(countElement.textContent);
+            
+            if (button.classList.contains('liked')) {
+                count += 1;
+                currentVideos[videoIndex].likes = count;
+            } else {
+                count -= 1;
+                currentVideos[videoIndex].likes = count;
+            }
+            
+            countElement.textContent = count.toString();
+            
+            setTimeout(() => {
+                button.classList.remove('pulse');
+            }, 300);
+        }
+
+        function downloadVideo(url, filename) {
+            // 実際の実装では、サーバーからファイルをダウンロード
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+        }
+
+        function shareVideo(title) {
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: `動画「${title}」をチェックしてください！`,
+                    url: window.location.href
+                });
+            } else {
+                // フォールバック: URLをクリップボードにコピー
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('動画のURLをクリップボードにコピーしました！');
+                });
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // キーボードナビゲーション
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                scrollUp();
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                scrollDown();
+            } else if (e.key === 'Enter' && e.target === document.getElementById('searchInput')) {
+                searchVideos();
+            }
+        });
+
+        // スワイプジェスチャー
+        let startY = 0;
+        let endY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            endY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = startY - endY;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    scrollDown();
+                } else {
+                    scrollUp();
+                }
+            }
+        }
+
+        // 検索入力のイベントリスナー
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            // リアルタイム検索（オプション）
+            if (e.target.value.length === 0) {
+                searchVideos();
+            }
+        });
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeVideos();
+        });
+    </script>
+</body>
+</html>
